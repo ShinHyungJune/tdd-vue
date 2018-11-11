@@ -10,13 +10,13 @@ describe('Reminders', () => {
     });
 
     it('hides the remidners list if there are none', ()=>{
-        expect(reminderList).toBe(false);
+        expect(wrapper.contains('ul')).toBe(false);
     });
 
     it ('can add reminders', ()=>{
         addReminder('Go to the store');
 
-        expect(reminderList).toContain('Go to the store');
+        expect(reminderList()).toContain('Go to the store');
     });
 
     it('can remove any reminder', () => {
@@ -27,8 +27,7 @@ describe('Reminders', () => {
 
         deleteButton.trigger('click');
 
-        expect(reminderList).not.toContain('Go to the store');
-        expect(reminderList).toContain('Finish screencast');
+        expect(reminderList()).not.toContain('Go to the store');
     });
 
     function addReminder(body) {
