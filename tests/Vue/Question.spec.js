@@ -1,11 +1,14 @@
 import { mount } from 'vue-test-utils';
 import expect from 'expect';
 import Question from '../../resources/js/components/Question.vue';
+import moxios from 'moxios';
 
 describe('Question', () => {
     let wrapper;
 
     beforeEach(() => {
+        moxios.install();
+
         wrapper = mount(Question, {
             propsData: {
                 dataQuestion: {
@@ -14,6 +17,10 @@ describe('Question', () => {
                 }
             }
         });
+    });
+
+    afterEach(() => {
+        moxios.uninstall();
     });
 
     it ('presents the title and the body', () => {
@@ -42,7 +49,7 @@ describe('Question', () => {
         expect(wrapper.contains('#edit')).toBe(false);
     });
 
-    it('updates the question after being edited', () => {
+    it.only ('updates the question after being edited', (done) => {
         wrapper.find('#edit').trigger('click');
 
         type('input[name=title]', 'Changed title');
@@ -50,8 +57,22 @@ describe('Question', () => {
 
         click('#update');
 
-        see('Changed title');
-        see('Changed body');
+        // ""로 안쓸 때는 오른쪽처럼(// 사이에) /url, 특스문자 앞에는 \ 붙이기, d+ 숫자 아무거나 와도된다는 뜻, 아무거나 다 상관없으면 .+/
+        moxios.stubRequest(/\/questions\/\d+/, { // /questions/{any number}
+            status:200,
+            response: {
+                title: 'Changed title',
+                body: 'Changed body'
+            }
+        });
+
+        moxios.wait(() => { // 비동기 통신에 대한 결과값 테스트할 때는 wait 사용
+            see('Changed title');
+            see('Changed body');
+            see('Updated!');
+
+            done(); // 비동기를 위한 콜백(작업 다 끝났어요~)
+        });
     });
 
     it ('can cancel out of edit mode', () => {
